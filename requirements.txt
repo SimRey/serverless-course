@@ -2,3 +2,6 @@ fastapi
 gunicorn
 uvicorn
 python-decouple
+pytest
+httpx
+rav
