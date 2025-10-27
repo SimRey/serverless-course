@@ -1,54 +1,90 @@
 name: Test, Build and Push to Docker Hub
 
+# Trigger the workflow on push to main or pull requests targeting main
 on:
   push:
-    branches:
-      - main
-
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
+  # -----------------------------
+  # 1. TEST JOB
+  # -----------------------------
   test:
+    name: Run Unit Tests
     runs-on: ubuntu-latest
+
     steps:
-      
-      # Grabs the code from the repository
+      # 1️⃣ Checkout the code from the repository
       - name: Checkout code
-        uses: actions/checkout@v3
-      
-      # Sets up the Python 
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup Python environment
       - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      
-      # Install dependencies
+
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      
-      # Run tests
-      - name: Run tests
-        env: 
-          MODE: "test"
-        run: |
-          pytest src/tests.py
+        env:
+          # Cache pip dependencies to speed up future runs
+          PIP_CACHE_DIR: ~/.cache/pip
 
-  
-  build_deploy:
+      # 4️⃣ Run your tests
+      - name: Run tests
+        env:
+          # You can override environment variables here for testing
+          MODE: test
+        run: pytest src/tests.py
+
+
+  # -----------------------------
+  # 2. BUILD & PUSH DOCKER IMAGE
+  # -----------------------------
+  build_push:
+    name: Build and Push Docker Image
     runs-on: ubuntu-latest
     needs: test
+    permissions:
+      contents: read
+      packages: write
 
     steps:
-      # Grabs the code from the repository
+      # 1️⃣ Checkout the code again
       - name: Checkout code
-        uses: actions/checkout@v3
-      
-      # Build Docker image
+        uses: actions/checkout@v4
+
+      # 2️⃣ Set up QEMU
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
+        # QEMU allows Docker to build images for multiple CPU architectures (x86, ARM, etc.)
+        # Useful if your image needs to run on ARM devices (like Apple M1/M2)
+
+      # 3️⃣ Set up Docker Buildx
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Build Docker image
-        run: |
-          docker build -f Dockerfile -t serverless-py .
+        uses: docker/setup-buildx-action@v3
+        # Buildx allows advanced Docker build features, like multi-arch builds and build caching
+
+      # 4️⃣ Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+        # These credentials must exist in GitHub secrets
+
+      # 5️⃣ Build and push Docker image
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/serverless-py:latest
+          # Build cache to speed up future builds
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/serverless-py:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/serverless-py:buildcache,mode=max
