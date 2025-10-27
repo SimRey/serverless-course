@@ -12,13 +12,15 @@ RUN apt-get update && \
     make
 
 
-
 # 2. What code and docs
 WORKDIR /app
 
 # Copy local_dir to /app in the container
 COPY . /app
 COPY requirements.txt /app/requirements.txt
+
+EXPOSE 8000
+
 
 # 3. Create a virtual environment
 RUN python -m venv /opt/venv && \

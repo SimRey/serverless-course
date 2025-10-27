@@ -2,21 +2,28 @@ scripts:
   runserver: uvicorn src.main:app --reload
   test: pytest src/tests.py
 
-  # This script builds the Docker image using the Dockerfile in the current directory
-  # It tags the image with the name "serverless-py"
+  # Build Docker image
   build: docker build -f Dockerfile -t serverless-py .
 
-  # This script runs the Docker image in a container
-  # It maps port 8000 on the host to port 8000 in the container
-  # It removes the container when it's done running
-  run: docker run --env-file .env -p 8000:8000 --rm --name serverless_py -it serverless-py
+  # Run container using the PORT variable from .env
+  run: |
+    export $(grep -v '^#' .env | xargs) && \
+    docker run --env-file .env -p ${PORT:-8000}:${PORT:-8000} --rm --name serverless_py -it serverless-py
 
-  # This script opens a shell inside the Docker container
-  # It allows you to interact with the container's filesystem and run commands inside the container
+  # Open a shell inside the running container
   shell: docker exec -it serverless_py /bin/bash
 
   build_run:
-   - rav run build
-   - rav run run
+    - rav run build
+    - rav run run
 
-  push: docker push 
+  # Push image to Docker Hub
+  push:
+    - docker build -f Dockerfile -t serverless-py .
+    - docker tag serverless-py simrey/serverless-py:latest
+    - docker push simrey/serverless-py:latest
+
+  pull_run: |
+    docker pull simrey/serverless-py:latest && \
+    export $(grep -v '^#' .env | xargs) && \
+    docker run --env-file .env -p ${PORT:-8000}:${PORT:-8000} --rm --name serverless_py -it simrey/serverless-py:latest

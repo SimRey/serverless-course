@@ -1,47 +1,25 @@
-venv/
-.env
-__pycache__/
+# Ignore built artifacts
 *.pyc
 *.pyo
-*.pyd
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
+__pycache__
+
+# Ignore virtual environment
+venv
+.env
+
+# Ignore generated files
 *.log
-pip-wheel-metadata/
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
-.pyre/
-.mypy_cache/
-.dmypy.json
-.dmypy.sock
-.pytype/
-cython_debug/
-.pyc
-tags
-*.swp
+*.lock
+*.db
+.pytest_cache
+
+# Ignore IDE files
+.idea
 .vscode
-.idea/
+
+# Ignore build files
+build
+dist
+
+# Ignore git files
+.git
