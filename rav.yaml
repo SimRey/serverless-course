@@ -1,5 +1,22 @@
 scripts:
   runserver: uvicorn src.main:app --reload
   test: pytest src/tests.py
-  build: docker build
-  push: docker push
+
+  # This script builds the Docker image using the Dockerfile in the current directory
+  # It tags the image with the name "serverless-py"
+  build: docker build -f Dockerfile -t serverless-py .
+
+  # This script runs the Docker image in a container
+  # It maps port 8000 on the host to port 8000 in the container
+  # It removes the container when it's done running
+  run: docker run --env-file .env -p 8000:8000 --rm --name serverless_py -it serverless-py
+
+  # This script opens a shell inside the Docker container
+  # It allows you to interact with the container's filesystem and run commands inside the container
+  shell: docker exec -it serverless_py /bin/bash
+
+  build_run:
+   - rav run build
+   - rav run run
+
+  push: docker push 

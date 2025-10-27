@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from src.env import config
 
-MODE = config("MODE", default="dev", cast=str)
+MODE = config("MODE", default="test")
 
 app = FastAPI()
 

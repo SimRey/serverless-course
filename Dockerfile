@@ -17,13 +17,13 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Copy local_dir to /app in the container
-COPY . /app/
+COPY . /app
 COPY requirements.txt /app/requirements.txt
 
 # 3. Create a virtual environment
 RUN python -m venv /opt/venv && \
     /opt/venv/bin/python -m pip install --upgrade pip && \
-    /opt/venv/bin/pip install -r requirements.txt
+    /opt/venv/bin/pip install -r /app/requirements.txt
 
 RUN apt-get remove -y --purge build-essential gcc make && \
     apt-get autoremove -y && \
@@ -32,8 +32,8 @@ RUN apt-get remove -y --purge build-essential gcc make && \
 
 
 # Make entrypoint script executable
-RUN chmod +x entrypoint.sh
+RUN chmod +x ./src/entrypoint.sh
 
 
 # 4. Run the application
-CMD ["./entrypoint.sh"]
+CMD ["./src/entrypoint.sh"]
