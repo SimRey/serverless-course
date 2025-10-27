@@ -7,11 +7,11 @@ scripts:
 
   # Run container using the PORT variable from .env
   run: |
-    export $(grep -v '^#' .env | xargs) && \
-    docker run --env-file .env -p ${PORT:-8000}:${PORT:-8000} --rm --name serverless_py -it serverless-py
+    docker run --env-file .env -p 8000:8000 --rm --name serverless_container -it serverless-py
+
 
   # Open a shell inside the running container
-  shell: docker exec -it serverless_py /bin/bash
+  shell: docker exec -it serverless_container /bin/bash
 
   build_run:
     - rav run build
@@ -23,7 +23,7 @@ scripts:
     - docker tag serverless-py simrey/serverless-py:latest
     - docker push simrey/serverless-py:latest
 
-  pull_run: |
-    docker pull simrey/serverless-py:latest && \
-    export $(grep -v '^#' .env | xargs) && \
-    docker run --env-file .env -p ${PORT:-8000}:${PORT:-8000} --rm --name serverless_py -it simrey/serverless-py:latest
+  pull_run:
+    - docker pull simrey/serverless-py:latest
+    - docker run --env-file .env -p 8000:8000 --rm --name serverless_container -it simrey/serverless-py:latest
+
